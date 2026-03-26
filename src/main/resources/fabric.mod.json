@@ -1,0 +1,29 @@
+{
+	"schemaVersion": 1,
+	"id": "${mod_id}",
+	"version": "${version}",
+	"name": "${mod_name}",
+	"description": "Sistema de seguridad estilo SecurityCraft para Fabric 1.21.11, empezando por cofres y hornos con contrasena.",
+	"authors": [
+		"EQUIPO"
+	],
+	"license": "CC0-1.0",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.wardwatch.WardWatchMod"
+		],
+		"client": [
+			"com.wardwatch.client.WardWatchClient"
+		]
+	},
+	"mixins": [
+		"ward_watch.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.18.4",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
