@@ -1,0 +1,281 @@
+{
+  "meta": {
+    "format_version": "4.10",
+    "model_format": "free",
+    "box_uv": false
+  },
+  "name": "protected_chest",
+  "resolution": {
+    "width": 128,
+    "height": 128
+  },
+  "textures": [
+    {
+      "path": "../../src/main/resources/assets/ward_watch/textures/entity/chest/protected.png",
+      "name": "protected",
+      "id": "0",
+      "particle": false,
+      "render_mode": "default",
+      "visible": true,
+      "mode": "bitmap",
+      "saved": true,
+      "uuid": "d7a47f32-8d9c-4a32-9d5d-c3f0f6f8d101"
+    }
+  ],
+  "elements": [
+    {
+      "name": "lid",
+      "box_uv": false,
+      "rescale": false,
+      "locked": false,
+      "light_emission": 0,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "from": [
+        1,
+        10,
+        1
+      ],
+      "to": [
+        15,
+        15,
+        15
+      ],
+      "autouv": 0,
+      "color": 0,
+      "origin": [
+        8,
+        10,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            28,
+            0,
+            56,
+            10
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            28,
+            28,
+            38
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            84,
+            0,
+            112,
+            10
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            56,
+            28,
+            84,
+            38
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            28,
+            10,
+            56,
+            38
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            56,
+            10,
+            84,
+            38
+          ],
+          "texture": 0
+        }
+      },
+      "uuid": "667111f1-e884-4abf-b79d-8b2b55ea3c31"
+    },
+    {
+      "name": "base",
+      "box_uv": false,
+      "rescale": false,
+      "locked": false,
+      "light_emission": 0,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        10,
+        15
+      ],
+      "autouv": 0,
+      "color": 0,
+      "origin": [
+        8,
+        0,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            28,
+            38,
+            56,
+            58
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            66,
+            28,
+            86
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            84,
+            38,
+            112,
+            58
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            56,
+            66,
+            84,
+            86
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            28,
+            58,
+            56,
+            86
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            56,
+            58,
+            84,
+            86
+          ],
+          "texture": 0
+        }
+      },
+      "uuid": "2e1a5f4d-d4fd-4c67-98c0-c0e14af05672"
+    },
+    {
+      "name": "lock",
+      "box_uv": false,
+      "rescale": false,
+      "locked": false,
+      "light_emission": 0,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "from": [
+        7,
+        7,
+        0
+      ],
+      "to": [
+        9,
+        11,
+        1
+      ],
+      "autouv": 0,
+      "color": 0,
+      "origin": [
+        8,
+        8,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            4,
+            8
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            8,
+            2,
+            16
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            6,
+            0,
+            10,
+            8
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            4,
+            8,
+            6,
+            16
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            2,
+            8,
+            6,
+            10
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            6,
+            8,
+            10,
+            10
+          ],
+          "texture": 0
+        }
+      },
+      "uuid": "f0b31de9-7a77-4919-8688-4dc9202bd8d5"
+    }
+  ],
+  "outliner": [
+    "667111f1-e884-4abf-b79d-8b2b55ea3c31",
+    "2e1a5f4d-d4fd-4c67-98c0-c0e14af05672",
+    "f0b31de9-7a77-4919-8688-4dc9202bd8d5"
+  ]
+}

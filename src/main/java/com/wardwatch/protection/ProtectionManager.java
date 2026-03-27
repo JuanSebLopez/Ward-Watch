@@ -2,19 +2,23 @@ package com.wardwatch.protection;
 
 import com.wardwatch.item.ModItems;
 import com.wardwatch.network.ModPayloads;
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.AbstractFurnaceBlock;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.block.enums.ChestType;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -23,9 +27,11 @@ import net.minecraft.world.World;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class ProtectionManager {
 	public static final int MAX_PASSWORD_LENGTH = 6;
+	private static final Set<String> PENDING_PROTECTOR_DROPS = ConcurrentHashMap.newKeySet();
 
 	private ProtectionManager() {
 	}
@@ -53,16 +59,50 @@ public final class ProtectionManager {
 			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
 			PasswordProtected protection = getProtectionData(world, pos);
 			if (protection != null && protection.wardWatch$isProtected()) {
-				ModPayloads.openUnlockScreen(serverPlayer, pos, state.getBlock().getName().getString());
+				ModPayloads.openUnlockScreen(serverPlayer, pos, state.getBlock().getTranslationKey());
 				return ActionResult.SUCCESS_SERVER;
 			}
 
 			if (player.getMainHandStack().isOf(ModItems.PASSWORD_PROTECTOR)) {
-				ModPayloads.openSetupScreen(serverPlayer, pos, state.getBlock().getName().getString());
+				ModPayloads.openSetupScreen(serverPlayer, pos, state.getBlock().getTranslationKey());
 				return ActionResult.SUCCESS_SERVER;
 			}
 
 			return ActionResult.PASS;
+		});
+
+		PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, blockEntity) -> {
+			if (!isSupported(state, blockEntity)) {
+				return true;
+			}
+
+			PasswordProtected protection = getProtectionData(world, pos);
+			if (protection == null || !protection.wardWatch$isProtected()) {
+				return true;
+			}
+
+			if (!protection.wardWatch$isOwner(player)) {
+				player.sendMessage(Text.literal("Solo el creador puede romper este bloque protegido."), true);
+				return false;
+			}
+
+			for (BlockPos linkedPos : getLinkedPositions(world, pos)) {
+				if (!linkedPos.equals(pos)) {
+					clearProtection(world, linkedPos);
+				}
+			}
+
+			PENDING_PROTECTOR_DROPS.add(makeDropKey(world, pos));
+			return true;
+		});
+
+		PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
+			if (!PENDING_PROTECTOR_DROPS.remove(makeDropKey(world, pos))) {
+				return;
+			}
+
+			ItemEntity drop = new ItemEntity(world, pos.getX() + 0.5D, pos.getY() + 0.35D, pos.getZ() + 0.5D, new ItemStack(ModItems.PASSWORD_PROTECTOR));
+			world.spawnEntity(drop);
 		});
 	}
 
@@ -110,7 +150,7 @@ public final class ProtectionManager {
 				continue;
 			}
 
-			protection.wardWatch$setPassword(password);
+			protection.wardWatch$setProtection(password, player.getUuid(), player.getName().getString());
 			blockEntity.markDirty();
 			sync(world, currentPos);
 			applied = true;
@@ -151,6 +191,15 @@ public final class ProtectionManager {
 		return blockEntity instanceof PasswordProtected protection ? protection : null;
 	}
 
+	private static void clearProtection(World world, BlockPos pos) {
+		BlockEntity blockEntity = world.getBlockEntity(pos);
+		if (blockEntity instanceof PasswordProtected protection) {
+			protection.wardWatch$clearPassword();
+			blockEntity.markDirty();
+			sync(world, pos);
+		}
+	}
+
 	private static Set<BlockPos> getLinkedPositions(World world, BlockPos pos) {
 		Set<BlockPos> positions = new LinkedHashSet<>();
 		positions.add(pos);
@@ -181,6 +230,10 @@ public final class ProtectionManager {
 		}
 
 		return positions;
+	}
+
+	private static String makeDropKey(World world, BlockPos pos) {
+		return world.getRegistryKey().getValue() + ":" + pos.asLong();
 	}
 
 	private static void sync(World world, BlockPos pos) {

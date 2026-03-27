@@ -1,3 +1,11 @@
 {
-	"item.ward_watch.password_protector": "Password Protector"
+	"item.ward_watch.password_protector": "Password Protector",
+	"screen.ward_watch.setup_title": "Password-protected %s setup",
+	"screen.ward_watch.unlock_title": "Password-protected %s",
+	"screen.ward_watch.code_label": "CODE:",
+	"screen.ward_watch.blur_password": "Blur password",
+	"screen.ward_watch.show_password": "Show password",
+	"screen.ward_watch.setup_button": "Setup",
+	"screen.ward_watch.open_button": "Open",
+	"screen.ward_watch.invalid_code": "Invalid code!"
 }
