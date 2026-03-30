@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "II ",
+    "IIP",
+    "II "
+  ],
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "P": "ward_watch:password_protector"
+  },
+  "result": {
+    "id": "ward_watch:protected_door",
+    "count": 1
+  }
+}

@@ -1,5 +1,6 @@
 package com.wardwatch;
 
+import com.wardwatch.block.ModBlocks;
 import com.wardwatch.item.ModItems;
 import com.wardwatch.network.ModPayloads;
 import com.wardwatch.protection.ProtectionManager;
@@ -13,6 +14,7 @@ public class WardWatchMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		ModBlocks.register();
 		ModItems.register();
 		ModPayloads.register();
 		ProtectionManager.register();

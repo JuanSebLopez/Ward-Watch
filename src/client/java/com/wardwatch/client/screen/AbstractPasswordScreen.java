@@ -104,6 +104,18 @@ public abstract class AbstractPasswordScreen extends Screen {
 		context.fill(x + width - 1, y, x + width, y + height, dark);
 	}
 
+
+	protected int drawWrappedCenteredTitle(DrawContext context, int left, int top, int panelWidth, int maxWidth, int color) {
+		var lines = textRenderer.wrapLines(title, maxWidth);
+		int y = top + 10;
+		for (var line : lines) {
+			int x = left + (panelWidth - textRenderer.getWidth(line)) / 2;
+			context.drawText(textRenderer, line, x, y, color, false);
+			y += textRenderer.fontHeight + 2;
+		}
+		return y;
+	}
+
 	protected void drawField(DrawContext context, int x, int y, int width, int height, String displayText) {
 		context.fill(x, y, x + width, y + height, 0xFF050505);
 		drawBorder(context, x, y, width, height, 0xFF9A9A9A, 0xFFEAEAEA);

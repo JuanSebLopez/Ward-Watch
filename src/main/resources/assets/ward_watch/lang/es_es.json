@@ -1,5 +1,6 @@
 {
   "item.ward_watch.password_protector": "Protector con contrasena",
+  "block.ward_watch.protected_door": "Puerta",
   "screen.ward_watch.setup_title": "Configuracion de %s protegido por contrasena",
   "screen.ward_watch.unlock_title": "%s protegido por contrasena",
   "screen.ward_watch.code_label": "CODIGO:",

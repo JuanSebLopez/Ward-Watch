@@ -1,5 +1,6 @@
 package com.wardwatch.network;
 
+import com.wardwatch.block.ModBlocks;
 import com.wardwatch.item.ModItems;
 import com.wardwatch.network.payload.OpenSetupPayload;
 import com.wardwatch.network.payload.OpenUnlockPayload;
@@ -26,7 +27,8 @@ public final class ModPayloads {
 
 		ServerPlayNetworking.registerGlobalReceiver(SubmitSetupPayload.ID, (payload, context) -> {
 			ServerPlayerEntity player = context.player();
-			if (!player.getMainHandStack().isOf(ModItems.PASSWORD_PROTECTOR)) {
+			boolean consumesProtector = !player.getEntityWorld().getBlockState(payload.pos()).isOf(ModBlocks.PROTECTED_DOOR);
+			if (consumesProtector && !player.getMainHandStack().isOf(ModItems.PASSWORD_PROTECTOR)) {
 				sendResult(player, false, "Necesitas el Password Protector en la mano principal.");
 				return;
 			}
@@ -41,7 +43,9 @@ public final class ModPayloads {
 				return;
 			}
 
-			player.getMainHandStack().decrement(1);
+			if (consumesProtector) {
+				player.getMainHandStack().decrement(1);
+			}
 			sendResult(player, true, "Bloque protegido correctamente.");
 		});
 

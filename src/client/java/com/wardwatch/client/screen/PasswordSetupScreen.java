@@ -17,26 +17,26 @@ public class PasswordSetupScreen extends AbstractPasswordScreen {
 
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-		int panelWidth = 240;
-		int panelHeight = 155;
+		int panelWidth = 270;
+		int panelHeight = 178;
 		int left = (width - panelWidth) / 2;
 		int top = (height - panelHeight) / 2;
 
 		drawPanel(context, left, top, panelWidth, panelHeight);
-		context.drawCenteredTextWithShadow(textRenderer, title, width / 2, top + 10, 0xFF2A2A2A);
-		context.drawText(textRenderer, Text.translatable("screen.ward_watch.code_label"), left + 18, top + 40,
-				0xFF1E1E1E, false);
+		int titleBottom = drawWrappedCenteredTitle(context, left, top, panelWidth, panelWidth - 24, 0xFF2A2A2A);
+		int fieldY = titleBottom + 12;
+		context.drawText(textRenderer, Text.translatable("screen.ward_watch.code_label"), left + 22, fieldY + 6, 0xFF1E1E1E, false);
 
 		String visiblePassword = blurPassword ? getMaskedPassword() : getPassword();
-		drawField(context, left + 58, top + 34, 112, 18, withCursor(visiblePassword));
+		drawField(context, left + 72, fieldY, 132, 18, withCursor(visiblePassword));
 
-		int blurX = left + 56;
-		int blurY = top + 82;
-		int blurWidth = 118;
+		int blurX = left + 69;
+		int blurY = fieldY + 42;
+		int blurWidth = 132;
 		int blurHeight = 20;
-		int actionX = left + 56;
-		int actionY = top + 112;
-		int actionWidth = 118;
+		int actionX = left + 69;
+		int actionY = blurY + 30;
+		int actionWidth = 132;
 		int actionHeight = 20;
 
 		drawActionButton(context, blurX, blurY, blurWidth, blurHeight,
@@ -52,17 +52,19 @@ public class PasswordSetupScreen extends AbstractPasswordScreen {
 	public boolean mouseClicked(Click click, boolean doubled) {
 		double mouseX = click.x();
 		double mouseY = click.y();
-		int panelWidth = 240;
-		int panelHeight = 155;
+		int panelWidth = 270;
+		int panelHeight = 178;
 		int left = (width - panelWidth) / 2;
 		int top = (height - panelHeight) / 2;
+		int titleBottom = top + 10 + textRenderer.wrapLines(title, panelWidth - 24).size() * (textRenderer.fontHeight + 2);
+		int fieldY = titleBottom + 12;
 
-		if (isInside(mouseX, mouseY, left + 56, top + 82, 118, 20)) {
+		if (isInside(mouseX, mouseY, left + 69, fieldY + 42, 132, 20)) {
 			blurPassword = !blurPassword;
 			return true;
 		}
 
-		if (isInside(mouseX, mouseY, left + 56, top + 112, 118, 20)) {
+		if (isInside(mouseX, mouseY, left + 69, fieldY + 72, 132, 20)) {
 			submit();
 			return true;
 		}

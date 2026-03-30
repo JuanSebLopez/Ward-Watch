@@ -1,17 +1,19 @@
 package com.wardwatch.protection;
 
+import com.wardwatch.block.ModBlocks;
+import com.wardwatch.block.ProtectedDoorBlock;
 import com.wardwatch.item.ModItems;
 import com.wardwatch.network.ModPayloads;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.AbstractFurnaceBlock;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.block.enums.ChestType;
+import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -27,6 +29,7 @@ import net.minecraft.world.World;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class ProtectionManager {
@@ -50,7 +53,7 @@ public final class ProtectionManager {
 
 			if (world.isClient()) {
 				ItemStack heldStack = player.getMainHandStack();
-				if (heldStack.isOf(ModItems.PASSWORD_PROTECTOR) || isProtected(world, pos)) {
+				if (state.isOf(ModBlocks.PROTECTED_DOOR) || heldStack.isOf(ModItems.PASSWORD_PROTECTOR) || isProtected(world, pos)) {
 					return ActionResult.SUCCESS;
 				}
 				return ActionResult.PASS;
@@ -63,7 +66,7 @@ public final class ProtectionManager {
 				return ActionResult.SUCCESS_SERVER;
 			}
 
-			if (player.getMainHandStack().isOf(ModItems.PASSWORD_PROTECTOR)) {
+			if (state.isOf(ModBlocks.PROTECTED_DOOR) || player.getMainHandStack().isOf(ModItems.PASSWORD_PROTECTOR)) {
 				ModPayloads.openSetupScreen(serverPlayer, pos, state.getBlock().getTranslationKey());
 				return ActionResult.SUCCESS_SERVER;
 			}
@@ -86,18 +89,24 @@ public final class ProtectionManager {
 				return false;
 			}
 
+			clearProtection(world, pos);
+
 			for (BlockPos linkedPos : getLinkedPositions(world, pos)) {
 				if (!linkedPos.equals(pos)) {
 					clearProtection(world, linkedPos);
 				}
 			}
 
-			PENDING_PROTECTOR_DROPS.add(makeDropKey(world, pos));
+			if (state.isOf(ModBlocks.PROTECTED_DOOR)) {
+				return true;
+			}
+
+			PENDING_PROTECTOR_DROPS.add(makeDropKey(world, getCanonicalPos(world, pos)));
 			return true;
 		});
 
 		PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
-			if (!PENDING_PROTECTOR_DROPS.remove(makeDropKey(world, pos))) {
+			if (!PENDING_PROTECTOR_DROPS.remove(makeDropKey(world, getCanonicalPos(world, pos)))) {
 				return;
 			}
 
@@ -112,6 +121,10 @@ public final class ProtectionManager {
 	}
 
 	public static boolean isSupported(BlockState state, BlockEntity blockEntity) {
+		if (state.isOf(ModBlocks.PROTECTED_DOOR)) {
+			return true;
+		}
+
 		if (blockEntity == null) {
 			return false;
 		}
@@ -143,8 +156,17 @@ public final class ProtectionManager {
 		}
 
 		World world = player.getEntityWorld();
+		BlockPos canonicalPos = getCanonicalPos(world, pos);
+		BlockState state = world.getBlockState(canonicalPos);
+		if (state.isOf(ModBlocks.PROTECTED_DOOR) && world instanceof ServerWorld serverWorld) {
+			DoorProtectionStorage.get(serverWorld).set(canonicalPos, password, player.getUuid(), player.getName().getString());
+			sync(world, canonicalPos);
+			sync(world, canonicalPos.up());
+			return true;
+		}
+
 		boolean applied = false;
-		for (BlockPos currentPos : getLinkedPositions(world, pos)) {
+		for (BlockPos currentPos : getLinkedPositions(world, canonicalPos)) {
 			BlockEntity blockEntity = world.getBlockEntity(currentPos);
 			if (!(blockEntity instanceof PasswordProtected protection)) {
 				continue;
@@ -170,7 +192,14 @@ public final class ProtectionManager {
 		}
 
 		World world = player.getEntityWorld();
-		NamedScreenHandlerFactory factory = world.getBlockState(pos).createScreenHandlerFactory(world, pos);
+		BlockPos canonicalPos = getCanonicalPos(world, pos);
+		BlockState state = world.getBlockState(canonicalPos);
+		if (state.getBlock() instanceof ProtectedDoorBlock protectedDoorBlock && world instanceof ServerWorld serverWorld) {
+			protectedDoorBlock.openTemporarily(serverWorld, state, canonicalPos, player);
+			return true;
+		}
+
+		NamedScreenHandlerFactory factory = world.getBlockState(canonicalPos).createScreenHandlerFactory(world, canonicalPos);
 		if (factory == null) {
 			return false;
 		}
@@ -180,31 +209,54 @@ public final class ProtectionManager {
 	}
 
 	public static PasswordProtected getProtectionData(World world, BlockPos pos) {
-		for (BlockPos currentPos : getLinkedPositions(world, pos)) {
+		BlockPos canonicalPos = getCanonicalPos(world, pos);
+		BlockState state = world.getBlockState(canonicalPos);
+		if (state.isOf(ModBlocks.PROTECTED_DOOR) && world instanceof ServerWorld serverWorld) {
+			return DoorProtectionStorage.get(serverWorld).get(canonicalPos)
+				.map(DoorProtectionView::new)
+				.orElse(null);
+		}
+
+		for (BlockPos currentPos : getLinkedPositions(world, canonicalPos)) {
 			BlockEntity blockEntity = world.getBlockEntity(currentPos);
 			if (blockEntity instanceof PasswordProtected protection && protection.wardWatch$isProtected()) {
 				return protection;
 			}
 		}
 
-		BlockEntity blockEntity = world.getBlockEntity(pos);
+		BlockEntity blockEntity = world.getBlockEntity(canonicalPos);
 		return blockEntity instanceof PasswordProtected protection ? protection : null;
 	}
 
 	private static void clearProtection(World world, BlockPos pos) {
-		BlockEntity blockEntity = world.getBlockEntity(pos);
+		BlockPos canonicalPos = getCanonicalPos(world, pos);
+		BlockState state = world.getBlockState(canonicalPos);
+		if (state.isOf(ModBlocks.PROTECTED_DOOR) && world instanceof ServerWorld serverWorld) {
+			DoorProtectionStorage.get(serverWorld).remove(canonicalPos);
+			sync(world, canonicalPos);
+			sync(world, canonicalPos.up());
+			return;
+		}
+
+		BlockEntity blockEntity = world.getBlockEntity(canonicalPos);
 		if (blockEntity instanceof PasswordProtected protection) {
 			protection.wardWatch$clearPassword();
 			blockEntity.markDirty();
-			sync(world, pos);
+			sync(world, canonicalPos);
 		}
 	}
 
 	private static Set<BlockPos> getLinkedPositions(World world, BlockPos pos) {
 		Set<BlockPos> positions = new LinkedHashSet<>();
-		positions.add(pos);
+		BlockPos canonicalPos = getCanonicalPos(world, pos);
+		positions.add(canonicalPos);
 
-		BlockState state = world.getBlockState(pos);
+		BlockState state = world.getBlockState(canonicalPos);
+		if (state.isOf(ModBlocks.PROTECTED_DOOR)) {
+			positions.add(canonicalPos.up());
+			return positions;
+		}
+
 		if (!(state.getBlock() instanceof ChestBlock) || !state.contains(ChestBlock.CHEST_TYPE) || !state.contains(ChestBlock.FACING)) {
 			return positions;
 		}
@@ -214,7 +266,7 @@ public final class ProtectionManager {
 		}
 
 		for (Direction direction : Direction.Type.HORIZONTAL) {
-			BlockPos neighborPos = pos.offset(direction);
+			BlockPos neighborPos = canonicalPos.offset(direction);
 			BlockState neighborState = world.getBlockState(neighborPos);
 			if (!(neighborState.getBlock() instanceof ChestBlock) || !neighborState.contains(ChestBlock.CHEST_TYPE) || !neighborState.contains(ChestBlock.FACING)) {
 				continue;
@@ -232,6 +284,14 @@ public final class ProtectionManager {
 		return positions;
 	}
 
+	private static BlockPos getCanonicalPos(World world, BlockPos pos) {
+		BlockState state = world.getBlockState(pos);
+		if (state.isOf(ModBlocks.PROTECTED_DOOR) && state.contains(ProtectedDoorBlock.HALF) && state.get(ProtectedDoorBlock.HALF) == DoubleBlockHalf.UPPER) {
+			return pos.down();
+		}
+		return pos;
+	}
+
 	private static String makeDropKey(World world, BlockPos pos) {
 		return world.getRegistryKey().getValue() + ":" + pos.asLong();
 	}
@@ -239,6 +299,50 @@ public final class ProtectionManager {
 	private static void sync(World world, BlockPos pos) {
 		if (world instanceof ServerWorld serverWorld) {
 			serverWorld.getChunkManager().markForUpdate(pos);
+		}
+	}
+
+	private static final class DoorProtectionView implements PasswordProtected {
+		private final String password;
+		private final UUID ownerUuid;
+		private final String ownerName;
+
+		private DoorProtectionView(DoorProtectionStorage.Entry entry) {
+			this.password = entry.password();
+			this.ownerUuid = entry.ownerUuid();
+			this.ownerName = entry.ownerName();
+		}
+
+		@Override
+		public boolean wardWatch$isProtected() {
+			return !this.password.isEmpty();
+		}
+
+		@Override
+		public String wardWatch$getPassword() {
+			return this.password;
+		}
+
+		@Override
+		public void wardWatch$setPassword(String password) {
+		}
+
+		@Override
+		public void wardWatch$clearPassword() {
+		}
+
+		@Override
+		public UUID wardWatch$getOwnerUuid() {
+			return this.ownerUuid;
+		}
+
+		@Override
+		public String wardWatch$getOwnerName() {
+			return this.ownerName;
+		}
+
+		@Override
+		public void wardWatch$setOwner(UUID ownerUuid, String ownerName) {
 		}
 	}
 }
