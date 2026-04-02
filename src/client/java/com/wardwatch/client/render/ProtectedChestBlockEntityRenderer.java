@@ -1,6 +1,7 @@
 package com.wardwatch.client.render;
 
 import com.wardwatch.protection.PasswordProtected;
+import com.wardwatch.protection.ProtectionManager;
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import net.minecraft.block.BlockState;
@@ -72,7 +73,7 @@ public class ProtectedChestBlockEntityRenderer implements BlockEntityRenderer<Ch
 		renderState.chestType = state.contains(ChestBlock.CHEST_TYPE) ? state.get(ChestBlock.CHEST_TYPE) : ChestType.SINGLE;
 		renderState.yaw = state.get(ChestBlock.FACING).getPositiveHorizontalDegrees();
 		renderState.variant = getVariant(blockEntity, this.christmas);
-		renderState.locked = blockEntity instanceof PasswordProtected protection && protection.wardWatch$isProtected();
+		renderState.locked = world != null && ProtectionManager.isProtected(world, blockEntity.getPos());
 
 		if (world != null && state.getBlock() instanceof ChestBlock chestBlock) {
 			DoubleBlockProperties.PropertySource<? extends ChestBlockEntity> source = chestBlock.getBlockEntitySource(state, world, blockEntity.getPos(), true);

@@ -261,27 +261,41 @@ public final class ProtectionManager {
 			return positions;
 		}
 
-		if (state.get(ChestBlock.CHEST_TYPE) == ChestType.SINGLE) {
+		BlockPos partnerPos = getDoubleChestPartnerPos(canonicalPos, state);
+		if (partnerPos == null) {
 			return positions;
 		}
 
-		for (Direction direction : Direction.Type.HORIZONTAL) {
-			BlockPos neighborPos = canonicalPos.offset(direction);
-			BlockState neighborState = world.getBlockState(neighborPos);
-			if (!(neighborState.getBlock() instanceof ChestBlock) || !neighborState.contains(ChestBlock.CHEST_TYPE) || !neighborState.contains(ChestBlock.FACING)) {
-				continue;
-			}
-
-			if (neighborState.get(ChestBlock.CHEST_TYPE) == ChestType.SINGLE) {
-				continue;
-			}
-
-			if (neighborState.get(ChestBlock.FACING) == state.get(ChestBlock.FACING)) {
-				positions.add(neighborPos);
-			}
+		BlockState partnerState = world.getBlockState(partnerPos);
+		if (!(partnerState.getBlock() instanceof ChestBlock) || !partnerState.contains(ChestBlock.CHEST_TYPE) || !partnerState.contains(ChestBlock.FACING)) {
+			return positions;
 		}
 
+		if (partnerState.get(ChestBlock.FACING) != state.get(ChestBlock.FACING)) {
+			return positions;
+		}
+
+		if (partnerState.get(ChestBlock.CHEST_TYPE) == ChestType.SINGLE) {
+			return positions;
+		}
+
+		positions.add(partnerPos);
 		return positions;
+	}
+
+	private static BlockPos getDoubleChestPartnerPos(BlockPos pos, BlockState state) {
+		if (!state.contains(ChestBlock.CHEST_TYPE) || !state.contains(ChestBlock.FACING)) {
+			return null;
+		}
+
+		ChestType chestType = state.get(ChestBlock.CHEST_TYPE);
+		if (chestType == ChestType.SINGLE) {
+			return null;
+		}
+
+		Direction facing = state.get(ChestBlock.FACING);
+		Direction offset = chestType == ChestType.LEFT ? facing.rotateYClockwise() : facing.rotateYCounterclockwise();
+		return pos.offset(offset);
 	}
 
 	private static BlockPos getCanonicalPos(World world, BlockPos pos) {

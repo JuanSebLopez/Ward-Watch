@@ -5,7 +5,8 @@
 	"mixins": [
 		"AbstractFurnaceBlockEntityMixin",
 		"BlockEntitySyncMixin",
-		"ChestBlockEntityMixin"
+		"ChestBlockEntityMixin",
+		"ExplosionBehaviorMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
