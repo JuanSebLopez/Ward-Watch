@@ -6,7 +6,10 @@
 		"AbstractFurnaceBlockEntityMixin",
 		"BlockEntitySyncMixin",
 		"ChestBlockEntityMixin",
-		"ExplosionBehaviorMixin"
+		"ExplosionBehaviorMixin",
+		"AdvancedExplosionBehaviorMixin",
+		"EntityExplosionBehaviorMixin",
+		"HopperBlockEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

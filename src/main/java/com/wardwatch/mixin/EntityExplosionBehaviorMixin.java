@@ -11,8 +11,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(net.minecraft.world.explosion.ExplosionBehavior.class)
-public abstract class ExplosionBehaviorMixin {
+@Mixin(net.minecraft.world.explosion.EntityExplosionBehavior.class)
+public abstract class EntityExplosionBehaviorMixin {
 	@Inject(method = "canDestroyBlock", at = @At("HEAD"), cancellable = true)
 	private void wardWatch$preventProtectedBlocksFromExploding(Explosion explosion, BlockView world, BlockPos pos, BlockState state, float power, CallbackInfoReturnable<Boolean> cir) {
 		if (world instanceof World actualWorld && ProtectionManager.isProtected(actualWorld, pos)) {

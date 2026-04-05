@@ -30,6 +30,7 @@ public final class ModBlocks {
 			AbstractBlock.Settings.copy(Blocks.IRON_DOOR)
 				.registryKey(PROTECTED_DOOR_KEY)
 				.sounds(BlockSoundGroup.IRON)
+				.strength(2.0F, 1200.0F)
 		)
 	);
 

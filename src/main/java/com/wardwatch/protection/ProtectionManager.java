@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class ProtectionManager {
 	public static final int MAX_PASSWORD_LENGTH = 6;
 	private static final Set<String> PENDING_PROTECTOR_DROPS = ConcurrentHashMap.newKeySet();
+	private static final Set<String> PENDING_PROTECTED_DOOR_DROPS = ConcurrentHashMap.newKeySet();
 
 	private ProtectionManager() {
 	}
@@ -98,6 +99,9 @@ public final class ProtectionManager {
 			}
 
 			if (state.isOf(ModBlocks.PROTECTED_DOOR)) {
+				if (state.contains(ProtectedDoorBlock.HALF) && state.get(ProtectedDoorBlock.HALF) == DoubleBlockHalf.UPPER) {
+					PENDING_PROTECTED_DOOR_DROPS.add(makeDropKey(world, getCanonicalPos(world, pos)));
+				}
 				return true;
 			}
 
@@ -106,7 +110,15 @@ public final class ProtectionManager {
 		});
 
 		PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
-			if (!PENDING_PROTECTOR_DROPS.remove(makeDropKey(world, getCanonicalPos(world, pos)))) {
+			BlockPos canonicalPos = getCanonicalPos(world, pos);
+			String dropKey = makeDropKey(world, canonicalPos);
+
+			if (PENDING_PROTECTED_DOOR_DROPS.remove(dropKey)) {
+				ItemEntity doorDrop = new ItemEntity(world, canonicalPos.getX() + 0.5D, canonicalPos.getY() + 0.35D, canonicalPos.getZ() + 0.5D, new ItemStack(ModBlocks.PROTECTED_DOOR.asItem()));
+				world.spawnEntity(doorDrop);
+			}
+
+			if (!PENDING_PROTECTOR_DROPS.remove(dropKey)) {
 				return;
 			}
 
