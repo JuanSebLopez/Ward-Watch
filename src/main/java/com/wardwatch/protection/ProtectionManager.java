@@ -54,7 +54,7 @@ public final class ProtectionManager {
 
 			if (world.isClient()) {
 				ItemStack heldStack = player.getMainHandStack();
-				if (state.isOf(ModBlocks.PROTECTED_DOOR) || heldStack.isOf(ModItems.PASSWORD_PROTECTOR) || isProtected(world, pos)) {
+				if (state.isOf(ModBlocks.PROTECTED_DOOR) || heldStack.isOf(ModItems.PASSWORD_PROTECTOR) || heldStack.isOf(ModItems.MASTER_OVERRIDE) || isProtected(world, pos)) {
 					return ActionResult.SUCCESS;
 				}
 				return ActionResult.PASS;
@@ -63,6 +63,9 @@ public final class ProtectionManager {
 			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
 			PasswordProtected protection = getProtectionData(world, pos);
 			if (protection != null && protection.wardWatch$isProtected()) {
+				if (tryBypassWithOverride(serverPlayer, pos)) {
+					return ActionResult.SUCCESS_SERVER;
+				}
 				ModPayloads.openUnlockScreen(serverPlayer, pos, state.getBlock().getTranslationKey());
 				return ActionResult.SUCCESS_SERVER;
 			}
@@ -217,6 +220,24 @@ public final class ProtectionManager {
 		}
 
 		player.openHandledScreen(factory);
+		return true;
+	}
+
+	private static boolean tryBypassWithOverride(ServerPlayerEntity player, BlockPos pos) {
+		ItemStack stack = player.getMainHandStack();
+		if (!stack.isOf(ModItems.MASTER_OVERRIDE)) {
+			return false;
+		}
+
+		if (!openProtectedBlock(player, pos)) {
+			player.sendMessage(Text.literal("No se pudo forzar el acceso."), true);
+			return true;
+		}
+
+		stack.damage(1, player, Hand.MAIN_HAND);
+		if (stack.isEmpty()) {
+			player.sendMessage(Text.literal("El Master Override se agoto."), true);
+		}
 		return true;
 	}
 

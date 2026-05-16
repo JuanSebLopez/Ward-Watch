@@ -9,7 +9,8 @@
 		"ExplosionBehaviorMixin",
 		"AdvancedExplosionBehaviorMixin",
 		"EntityExplosionBehaviorMixin",
-		"HopperBlockEntityMixin"
+		"HopperBlockEntityMixin",
+		"ShapedRecipeMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

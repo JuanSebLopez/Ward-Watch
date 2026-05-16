@@ -1,0 +1,18 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"pattern": [
+		"BNB",
+		"PXP",
+		"BNB"
+	],
+	"key": {
+		"B": "minecraft:diamond_block",
+		"N": "minecraft:nether_star",
+		"P": "ward_watch:password_protector",
+		"X": "minecraft:netherite_block"
+	},
+	"result": {
+		"id": "ward_watch:master_override",
+		"count": 1
+	}
+}

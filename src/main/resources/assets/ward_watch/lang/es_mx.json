@@ -1,6 +1,8 @@
 {
   "item.ward_watch.password_protector": "Protector con contrasena",
+  "item.ward_watch.master_override": "Anulador maestro",
   "block.ward_watch.protected_door": "Puerta",
+  "itemGroup.ward_watch.ward_watch": "Ward Watch",
   "screen.ward_watch.setup_title": "Configuracion de %s protegido por contrasena",
   "screen.ward_watch.unlock_title": "%s protegido por contrasena",
   "screen.ward_watch.code_label": "CODIGO:",

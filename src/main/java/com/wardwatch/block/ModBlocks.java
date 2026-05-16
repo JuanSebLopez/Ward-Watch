@@ -2,13 +2,11 @@ package com.wardwatch.block;
 
 import com.wardwatch.WardWatchMod;
 import com.wardwatch.item.ModItems;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockSetType;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroups;
 import net.minecraft.item.TallBlockItem;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -46,7 +44,5 @@ public final class ModBlocks {
 				new Item.Settings().useBlockPrefixedTranslationKey().registryKey(PROTECTED_DOOR_ITEM_KEY)
 			)
 		);
-
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> entries.addAfter(ModItems.PASSWORD_PROTECTOR, PROTECTED_DOOR.asItem()));
 	}
 }

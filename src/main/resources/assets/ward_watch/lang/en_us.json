@@ -1,6 +1,8 @@
 {
   "item.ward_watch.password_protector": "Password Protector",
+  "item.ward_watch.master_override": "Master Override",
   "block.ward_watch.protected_door": "Protected Door",
+  "itemGroup.ward_watch.ward_watch": "Ward Watch",
   "screen.ward_watch.setup_title": "Password-protected %s setup",
   "screen.ward_watch.unlock_title": "Password-protected %s",
   "screen.ward_watch.code_label": "CODE:",
